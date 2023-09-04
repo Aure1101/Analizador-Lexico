@@ -11,11 +11,15 @@ class AnalizadorLexico{
         char getNextCharacter();
         int regularExpresionChecker();
         AnalizadorLexico();
+        AnalizadorLexico(string);
 };
 
 AnalizadorLexico::AnalizadorLexico(){
-    fileName = "codigo.txt";
+    fileName = "codigso.txt";
+}
 
+AnalizadorLexico::AnalizadorLexico(string fileName){
+    this -> fileName = fileName;
 }
 
 int main(){
