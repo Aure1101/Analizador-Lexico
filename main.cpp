@@ -11,6 +11,8 @@ using namespace std;
 
 class AnalizadorLexico{
     private:
+        char nextCharacter;
+        char auxCharacter = NULL;
         char getNextCharacter();
         bool isLowerCase(char);
         bool isUpperCase(char);
@@ -69,8 +71,14 @@ bool AnalizadorLexico::hasFileEnded(){
 }
 
 char AnalizadorLexico::getNextCharacter(){
-    char c;
-    file.get(c);
+    char c = this -> nextCharacter;
+    if (auxCharacter == NULL){
+        file.get(this -> nextCharacter);
+        return c;
+    }
+    
+    this -> nextCharacter = auxCharacter;
+    auxCharacter = NULL;
     return c;
 }
 
@@ -79,35 +87,31 @@ string AnalizadorLexico::checkRegularExpresion(){
     palabra += getNextCharacter(); 
     switch(int(palabra[0])){
         case 64: //@ Identificador
-            palabra += getNextCharacter(); 
-            if(!isLowerCase(palabra.back()) || (palabra.back() == ' ' && file.eof())){
+            if(!isLowerCase(this -> nextCharacter) || (this -> nextCharacter == ' ' && file.eof())){
                 return palabra;
             }
-            while(palabra.back() != ' ' && !file.eof() && isLowerCase(palabra.back())){
+            palabra += getNextCharacter(); 
+            while(this -> nextCharacter != ' ' && !hasFileEnded() && isLowerCase(this -> nextCharacter)){
                 palabra += getNextCharacter();
             }
-            while(palabra.back() != ' ' && !file.eof() && isNumber(palabra.back())){
+            while(this -> nextCharacter != ' ' && !hasFileEnded() && isNumber(this -> nextCharacter)){
                 palabra += getNextCharacter();
             }
-            if(palabra.back() == ' ' || file.eof()){
+            if(this -> nextCharacter == ' ' || hasFileEnded()){
                 return palabra;
             }
             return palabra;
         break;
 
         case 35: //# Palabra Reservada
-            palabra += getNextCharacter(); 
-            if(!isUpperCase(palabra.back()) || (palabra.back() == ' ' && file.eof())){
+            if(!isUpperCase(this -> nextCharacter) || (this -> nextCharacter == ' ' && file.eof())){
                 return palabra;
             }
             palabra += getNextCharacter(); 
-            while(palabra.back() != ' ' && !file.eof() && isLowerCase(palabra.back())){
+            while(this -> nextCharacter != ' ' && !file.eof() && isLowerCase(this -> nextCharacter)){
                 palabra += getNextCharacter();
             }
-            while(palabra.back() != ' ' && !file.eof() && isNumber(palabra.back())){
-                palabra += getNextCharacter();
-            }
-            if(palabra.back() == ' ' || file.eof()){
+            if(this -> nextCharacter == ' ' || file.eof()){
                 return palabra;
             }
             return palabra;
@@ -115,21 +119,28 @@ string AnalizadorLexico::checkRegularExpresion(){
         
         default:
             if(isNumber(palabra.back())){ //Numero
-                while(isNumber(palabra.back())){
+                while(isNumber(this -> nextCharacter)){
                     palabra += getNextCharacter();
                 }
-                if(palabra.back() == ' ' || file.eof()){
+                if(this -> nextCharacter == ' ' || hasFileEnded()){
                     return palabra;
                 }
-                if(palabra.back() == '.'){
-                    palabra += getNextCharacter();
+                if(this -> nextCharacter == '.'){
+                    file.get(auxCharacter);
                 }
-                while(isNumber(palabra.back())){
-                    palabra += getNextCharacter();
-                }
-                if(palabra.back() == ' ' || file.eof()){
+                if(!isNumber(auxCharacter)){
                     return palabra;
                 }
+                    palabra += getNextCharacter();
+                while(isNumber(this -> nextCharacter)){
+                    palabra += getNextCharacter();
+                }
+                if(this -> nextCharacter == ' ' || file.eof()){
+                    return palabra;
+                }
+            }
+            if(palabra.back()==' ' && !hasFileEnded()){
+                return checkRegularExpresion();
             }
             //ninguno
             return palabra;
