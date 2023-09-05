@@ -1,6 +1,6 @@
 //Analizador Lexico Fase 1
 // Elaborado por:
-// Froylan Adair Villegas Castro 2022670111
+// Froylan Adair Villegas Castro 2022670123
 // Aurelio Flores Nava 2022670038
 
 #include <iostream>
