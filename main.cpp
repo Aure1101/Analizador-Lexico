@@ -1,3 +1,8 @@
+//Analizador Lexico Fase 1
+// Elaborado por:
+// Froylan Adair Villegas Castro 2022670111
+// Aurelio Flores Nava 2022670038
+
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
@@ -10,11 +15,11 @@ class AnalizadorLexico{
         bool isLowerCase(char);
         bool isUpperCase(char);
         bool isNumber(char);
-    public:
         ifstream file;
+    public:
         string checkRegularExpresion();
         AnalizadorLexico();
-        ifstream getFile();
+        bool hasFileEnded();
         AnalizadorLexico(string);
         ~AnalizadorLexico();
 };
@@ -57,6 +62,10 @@ bool AnalizadorLexico::isNumber(char c){
         return true;
     }
     return false;
+}
+
+bool AnalizadorLexico::hasFileEnded(){
+    return file.eof();
 }
 
 char AnalizadorLexico::getNextCharacter(){
@@ -131,7 +140,7 @@ string AnalizadorLexico::checkRegularExpresion(){
 
 int main(){
     AnalizadorLexico hola;
-    while(!hola.file.eof()){
+    while(!hola.hasFileEnded()){
     cout << hola.checkRegularExpresion() << endl;
     }
     return 0;
