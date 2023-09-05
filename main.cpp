@@ -26,13 +26,13 @@ class AnalizadorLexico{
         ~AnalizadorLexico();
 };
 
+//Constructores y Destructor------------------------------------------
 AnalizadorLexico::AnalizadorLexico(){
     file.open("codigo.txt");
     if(!file.is_open()){
         exit(EXIT_FAILURE);
     }
 }
-
 
 AnalizadorLexico::AnalizadorLexico(string fileName){
     file.open(fileName);
@@ -45,6 +45,7 @@ AnalizadorLexico::~AnalizadorLexico(){
     file.close();
 }
 
+//Banderas-------------------------------------------------
 bool AnalizadorLexico::isLowerCase(char c){
     if(int(c)>= 97 && int(c)<=122){
         return true;
@@ -70,13 +71,13 @@ bool AnalizadorLexico::hasFileEnded(){
     return file.eof();
 }
 
+//Metodos 
 char AnalizadorLexico::getNextCharacter(){
     char c = this -> nextCharacter;
     if (auxCharacter == NULL){
         file.get(this -> nextCharacter);
         return c;
     }
-    
     this -> nextCharacter = auxCharacter;
     auxCharacter = NULL;
     return c;
@@ -84,6 +85,7 @@ char AnalizadorLexico::getNextCharacter(){
 
 string AnalizadorLexico::checkRegularExpresion(){
     string palabra;
+    start:
     palabra += getNextCharacter(); 
     switch(int(palabra[0])){
         case 64: //@ Identificador
@@ -139,8 +141,9 @@ string AnalizadorLexico::checkRegularExpresion(){
                     return palabra;
                 }
             }
-            if(palabra.back()==' ' && !hasFileEnded()){
-                return checkRegularExpresion();
+            if((palabra.back() == ' ' || palabra.back() == '\n')&& !hasFileEnded()){
+                palabra.clear();
+                goto start;
             }
             //ninguno
             return palabra;
