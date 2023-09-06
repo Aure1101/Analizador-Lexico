@@ -12,7 +12,7 @@ using namespace std;
 class AnalizadorLexico{
     private:
         char nextCharacter;
-        char auxCharacter = NULL;
+        char auxCharacter = 0;
         char getNextCharacter();
         bool isLowerCase(char);
         bool isUpperCase(char);
@@ -26,7 +26,6 @@ class AnalizadorLexico{
         ~AnalizadorLexico();
 };
 
-//Constructores y Destructor------------------------------------------
 AnalizadorLexico::AnalizadorLexico(){
     file.open("codigo.txt");
     if(!file.is_open()){
@@ -45,7 +44,6 @@ AnalizadorLexico::~AnalizadorLexico(){
     file.close();
 }
 
-//Banderas-------------------------------------------------
 bool AnalizadorLexico::isLowerCase(char c){
     if(int(c)>= 97 && int(c)<=122){
         return true;
@@ -71,91 +69,85 @@ bool AnalizadorLexico::hasFileEnded(){
     return file.eof();
 }
 
-//Metodos 
 char AnalizadorLexico::getNextCharacter(){
     char c = this -> nextCharacter;
-    if (auxCharacter == NULL){
-        file.get(this -> nextCharacter);
+
+    if (auxCharacter != 0){
+        this -> nextCharacter = auxCharacter;
+        auxCharacter = 0;
         return c;
     }
-    this -> nextCharacter = auxCharacter;
-    auxCharacter = NULL;
+    
+    file.get(this -> nextCharacter);
     return c;
+
 }
 
 string AnalizadorLexico::checkRegularExpresion(){
     string palabra;
     start:
     palabra += getNextCharacter(); 
-    switch(int(palabra[0])){
-        case 64: //@ Identificador
-            if(!isLowerCase(this -> nextCharacter) || (this -> nextCharacter == ' ' && file.eof())){
-                return palabra;
-            }
-            palabra += getNextCharacter(); 
-            while(this -> nextCharacter != ' ' && !hasFileEnded() && isLowerCase(this -> nextCharacter)){
+    //# Palabra Reservada
+    if (palabra[0] == '#'){
+        if(isUpperCase(nextCharacter)){
+            palabra += getNextCharacter();
+            while(isLowerCase(nextCharacter)){
                 palabra += getNextCharacter();
             }
-            while(this -> nextCharacter != ' ' && !hasFileEnded() && isNumber(this -> nextCharacter)){
-                palabra += getNextCharacter();
-            }
-            if(this -> nextCharacter == ' ' || hasFileEnded()){
-                return palabra;
-            }
-            return palabra;
-        break;
-
-        case 35: //# Palabra Reservada
-            if(!isUpperCase(this -> nextCharacter) || (this -> nextCharacter == ' ' && file.eof())){
-                return palabra;
-            }
-            palabra += getNextCharacter(); 
-            while(this -> nextCharacter != ' ' && !file.eof() && isLowerCase(this -> nextCharacter)){
-                palabra += getNextCharacter();
-            }
-            if(this -> nextCharacter == ' ' || file.eof()){
-                return palabra;
-            }
-            return palabra;
-        break;
-        
-        default:
-            if(isNumber(palabra.back())){ //Numero
-                while(isNumber(this -> nextCharacter)){
-                    palabra += getNextCharacter();
-                }
-                if(this -> nextCharacter == ' ' || hasFileEnded()){
-                    return palabra;
-                }
-                if(this -> nextCharacter == '.'){
-                    file.get(auxCharacter);
-                }
-                if(!isNumber(auxCharacter)){
-                    return palabra;
-                }
-                    palabra += getNextCharacter();
-                while(isNumber(this -> nextCharacter)){
-                    palabra += getNextCharacter();
-                }
-                if(this -> nextCharacter == ' ' || file.eof()){
-                    return palabra;
-                }
-            }
-            if((palabra.back() == ' ' || palabra.back() == '\n')&& !hasFileEnded()){
-                palabra.clear();
-                goto start;
-            }
-            //ninguno
-            return palabra;
-        break;
+        }
+        goto end;
     }
+
+    //@ identificador
+    if(palabra[0] == '@'){
+        if(isLowerCase(nextCharacter)){
+            while(isLowerCase(nextCharacter)){
+                palabra += getNextCharacter();
+            }
+            while(isNumber(nextCharacter)){
+                palabra += getNextCharacter(); 
+            }
+        }
+        goto end;
+    }
+
+    //Numeros
+    if(isNumber(palabra.back())){ //Numero
+        while(isNumber(this -> nextCharacter)){
+            palabra += getNextCharacter();
+        }
+
+        //Comprobar que despues del punto haya un numero realmente
+        if(this -> nextCharacter == '.'){
+            file.get(auxCharacter);
+            //Si lo que hay despues del punto no es numero, el punto no se añade y se retorna
+            //el numero hasta antes de él
+            if(!isNumber(auxCharacter)){
+                goto end;
+            }
+        }
+
+        palabra += getNextCharacter();
+        while(isNumber(this -> nextCharacter)){
+            palabra += getNextCharacter();
+        }
+        goto end;
+    }
+
+    //Eliminar Espacios y saltos de linea
+    if((palabra.back() == ' ' || palabra.back() == '\n') && !hasFileEnded()){
+        palabra.clear();
+        goto start;
+    }
+
+    end:
     return palabra;
 }
 
 int main(){
-    AnalizadorLexico hola;
-    while(!hola.hasFileEnded()){
-    cout << hola.checkRegularExpresion() << endl;
+    AnalizadorLexico analizador;
+    while(!analizador.hasFileEnded()){
+    cout << analizador.checkRegularExpresion() << endl;
     }
     return 0;
 }  
